@@ -32,6 +32,6 @@
  * }
  * }</pre>
  *
- * @see com.coachdiff.application.usecase
+ * @see com.coachdiff.application.service
  */
 package com.coachdiff.domain.port.in;
