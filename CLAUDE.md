@@ -55,9 +55,9 @@ coach-diff/
 │   │   │   │       ├── MetricsCalculator
 │   │   │   │       └── RankComparator
 │   │   │   ├── application/
-│   │   │   │   └── usecase/
-│   │   │   │       ├── FetchProfileUseCase
-│   │   │   │       └── GenerateSuggestionsUseCase
+│   │   │   │   └── service/
+│   │   │   │       ├── FetchProfileService
+│   │   │   │       └── GenerateSuggestionsService
 │   │   │   └── infrastructure/
 │   │   │       ├── adapter/
 │   │   │       │   ├── in/rest/       # REST controllers
@@ -345,7 +345,7 @@ POSTGRES_PASSWORD=dev
 
 ### Phase 1: Core API (Week 2-3)
 - RiotApiAdapter (dual RestClient: routing + platform)
-- FetchProfileUseCase
+- FetchProfileService
 - MetricsCalculator service
 - REST endpoints: /api/profile, /api/matches
 - Redis caching
@@ -360,7 +360,7 @@ POSTGRES_PASSWORD=dev
 ### Phase 3: AI Suggestions (Week 5)
 - OpenAISuggestionAdapter
 - Prompt engineering
-- GenerateSuggestionsUseCase
+- GenerateSuggestionsService
 - Suggestion caching by profile_hash
 - REST endpoint: /api/suggestions
 - Error handling for OpenAI failures

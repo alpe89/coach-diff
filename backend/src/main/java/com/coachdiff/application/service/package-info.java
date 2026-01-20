@@ -1,5 +1,5 @@
 /**
- * APPLICATION LAYER - Use Case Implementations.
+ * APPLICATION LAYER - Application Services.
  *
  * <h2>Role</h2>
  * <p>
@@ -19,9 +19,9 @@
  *   <li>Does NOT contain business logic: that belongs in the domain</li>
  * </ul>
  *
- * <h2>Planned Use Cases</h2>
+ * <h2>Planned Services</h2>
  * <pre>
- * FetchProfileUseCaseImpl
+ * FetchProfileService
  *   1. Call RiotApiPort to get account info
  *   2. Call RiotApiPort to get rank
  *   3. Call RiotApiPort to get match history
@@ -29,7 +29,7 @@
  *   5. Persist with SummonerRepository
  *   6. Return SummonerProfile
  *
- * GenerateSuggestionsUseCaseImpl
+ * GenerateSuggestionsService
  *   1. Retrieve profile and metrics
  *   2. Retrieve RankMetrics for current and above tier
  *   3. Use RankComparator to find gaps
@@ -40,7 +40,7 @@
  * <h2>Example</h2>
  * <pre>{@code
  * @Service
- * public class FetchProfileUseCaseImpl implements FetchProfileUseCase {
+ * public class FetchProfileService implements FetchProfileUseCase {
  *
  *     private final RiotApiPort riotApi;
  *     private final SummonerRepository repository;
@@ -66,4 +66,4 @@
  *
  * @see com.coachdiff.domain.port.in
  */
-package com.coachdiff.application.usecase;
+package com.coachdiff.application.service;
