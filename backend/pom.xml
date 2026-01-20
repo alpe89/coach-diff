@@ -1,0 +1,337 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+=============================================================================
+CoachDiff.ai - Backend Module POM
+=============================================================================
+
+This POM defines the backend Spring Boot module.
+
+INHERITANCE:
+- Inherits from spring-boot-starter-parent (NOT from the parent aggregator)
+- This gives us automatic dependency management for all Spring libraries
+
+MAIN DEPENDENCIES:
+- Spring Boot 4.0.1 with Web, JPA, Redis, Validation
+- PostgreSQL driver
+- Flyway for database migrations
+- Testcontainers + WireMock for integration tests
+
+=============================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =======================================================================
+         PARENT: Spring Boot Starter Parent
+         =======================================================================
+         By inheriting from spring-boot-starter-parent we get:
+
+         1. DEPENDENCY MANAGEMENT
+            - No need to specify versions for common dependencies
+            - Example: spring-boot-starter-web has no <version>
+            - Spring Boot guarantees compatibility between all libraries
+
+         2. PRECONFIGURED PLUGINS
+            - maven-compiler-plugin with Java 21
+            - maven-surefire-plugin for tests
+            - spring-boot-maven-plugin to create executable JARs
+
+         3. RESOURCE FILTERING
+            - Replaces @variable@ in resource files with Maven values
+    -->
+    <parent>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-starter-parent</artifactId>
+        <version>4.0.1</version>
+        <relativePath/> <!-- Look in Maven repo, not filesystem -->
+    </parent>
+
+    <!-- =======================================================================
+         MAVEN COORDINATES
+         ======================================================================= -->
+    <groupId>com.coachdiff</groupId>
+    <artifactId>coach-diff-backend</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+    <name>CoachDiff Backend</name>
+    <description>Backend API for CoachDiff.ai</description>
+
+    <!-- =======================================================================
+         PROPERTIES
+         ======================================================================= -->
+    <properties>
+        <java.version>21</java.version>
+
+        <!--
+        Versions for dependencies NOT managed by Spring Boot.
+        For managed dependencies (like spring-boot-starter-*),
+        no version is needed.
+        -->
+        <testcontainers.version>1.20.4</testcontainers.version>
+        <wiremock.version>3.9.0</wiremock.version>
+    </properties>
+
+    <!-- =======================================================================
+         DEPENDENCIES
+         =======================================================================
+         Dependencies are organized by category.
+         Note: Most don't have <version> because it's managed by the parent.
+    -->
+    <dependencies>
+
+        <!-- ===================================================================
+             SPRING BOOT STARTERS
+             ===================================================================
+             "Starters" are meta-dependencies that include everything needed
+             for a feature. Example: spring-boot-starter-web includes:
+             - Spring MVC
+             - Embedded Tomcat
+             - Jackson for JSON
+             - Validation
+        -->
+
+        <!--
+        WEB: REST API with embedded Tomcat
+        Includes: Spring MVC, Tomcat, Jackson JSON, Bean Validation
+
+        NOTE Spring Boot 4.0: Undertow has been removed, only Tomcat and Jetty available.
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-web</artifactId>
+        </dependency>
+
+        <!--
+        DATA JPA: Object-Relational Mapping
+        Includes: Hibernate ORM, Spring Data JPA, HikariCP connection pool
+
+        Allows:
+        - Mapping Java classes to SQL tables with annotations (@Entity, @Table)
+        - Using Repository interfaces instead of writing SQL
+        - Managing transactions automatically
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-jpa</artifactId>
+        </dependency>
+
+        <!--
+        DATA REDIS: Cache and sessions
+        Includes: Lettuce client (more modern than Jedis), Spring Data Redis
+
+        We use Redis for caching with TTL:
+        - Profiles: 24h
+        - Match list: 1h
+        - AI suggestions: 24h
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-redis</artifactId>
+        </dependency>
+
+        <!--
+        VALIDATION: Bean Validation (JSR-380)
+        Includes: Hibernate Validator
+
+        Enables annotations like:
+        - @NotNull, @NotBlank
+        - @Size(min=1, max=100)
+        - @Email, @Pattern
+        - Automatic validation in REST endpoints
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-validation</artifactId>
+        </dependency>
+
+        <!--
+        ACTUATOR: Monitoring and health checks
+        Includes: Endpoints /actuator/health, /actuator/info, /actuator/metrics
+
+        Essential for:
+        - Health checks in Kubernetes/Docker
+        - Metrics for monitoring (Prometheus, Grafana)
+        - Debugging in production
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-actuator</artifactId>
+        </dependency>
+
+        <!-- ===================================================================
+             DATABASE
+             =================================================================== -->
+
+        <!--
+        POSTGRESQL DRIVER
+        Scope: runtime (not needed at compile time, only at runtime)
+
+        PostgreSQL 16 features:
+        - JSONB for semi-structured data
+        - Full-text search
+        - Excellent performance with indexes
+        -->
+        <dependency>
+            <groupId>org.postgresql</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>runtime</scope>
+        </dependency>
+
+        <!--
+        FLYWAY: Database migrations
+        Allows:
+        - Versioning the database schema (like Git for code)
+        - Applying migrations automatically at startup
+        - Controlled rollback (with Flyway Teams)
+
+        Migrations go in: src/main/resources/db/migration/
+        Naming: V1__description.sql, V2__description.sql, ...
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-core</artifactId>
+        </dependency>
+
+        <!--
+        FLYWAY POSTGRESQL: Specific support for PostgreSQL
+        Required since Flyway 10+ to use PostgreSQL-specific features
+        -->
+        <dependency>
+            <groupId>org.flywaydb</groupId>
+            <artifactId>flyway-database-postgresql</artifactId>
+        </dependency>
+
+        <!-- ===================================================================
+             TESTING
+             ===================================================================
+             scope=test means: available only during tests,
+             NOT included in the final JAR (reduces size)
+        -->
+
+        <!--
+        SPRING BOOT TEST: Complete testing framework
+        Includes:
+        - JUnit 5 (Jupiter)
+        - Mockito for mocks
+        - AssertJ for fluent assertions
+        - Spring Test utilities (@SpringBootTest, @WebMvcTest, etc.)
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-test</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+        SPRING BOOT TESTCONTAINERS: Integration with Testcontainers
+        Provides @ServiceConnection that:
+        - Starts containers automatically
+        - Configures Spring to connect to the container
+        - No more manual URL/port configuration
+
+        Example:
+        @ServiceConnection
+        PostgreSQLContainer<?> postgres = new PostgreSQLContainer<>("postgres:16");
+        // Spring Boot automatically configures spring.datasource.*
+        -->
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-testcontainers</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+        TESTCONTAINERS JUNIT 5: JUnit Jupiter integration
+        Provides @Testcontainers and @Container annotations
+        -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+        TESTCONTAINERS POSTGRESQL: Specific module for PostgreSQL
+        Provides PostgreSQLContainer with:
+        - Preconfigured Docker image
+        - Helper methods (getJdbcUrl(), getUsername(), etc.)
+        -->
+        <dependency>
+            <groupId>org.testcontainers</groupId>
+            <artifactId>postgresql</artifactId>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+        TESTCONTAINERS REDIS: Redis container for tests
+        Managed by Redis community (not Testcontainers core)
+        -->
+        <dependency>
+            <groupId>com.redis</groupId>
+            <artifactId>testcontainers-redis</artifactId>
+            <version>2.2.2</version>
+            <scope>test</scope>
+        </dependency>
+
+        <!--
+        WIREMOCK: Mock external HTTP APIs
+        Perfect for testing integrations with:
+        - Riot Games API
+        - OpenAI API
+
+        Allows:
+        - Simulating API responses without real calls
+        - Testing error handling (timeout, 500, rate limit)
+        - Deterministic and fast tests
+        -->
+        <dependency>
+            <groupId>org.wiremock</groupId>
+            <artifactId>wiremock-standalone</artifactId>
+            <version>${wiremock.version}</version>
+            <scope>test</scope>
+        </dependency>
+
+    </dependencies>
+
+    <!-- =======================================================================
+         DEPENDENCY MANAGEMENT
+         =======================================================================
+         We import the Testcontainers BOM (Bill of Materials).
+         This ensures all Testcontainers dependencies have
+         compatible versions with each other.
+    -->
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>org.testcontainers</groupId>
+                <artifactId>testcontainers-bom</artifactId>
+                <version>${testcontainers.version}</version>
+                <type>pom</type>
+                <scope>import</scope>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
+
+    <!-- =======================================================================
+         BUILD CONFIGURATION
+         ======================================================================= -->
+    <build>
+        <plugins>
+            <!--
+            SPRING BOOT MAVEN PLUGIN
+            Provides:
+            - `mvn spring-boot:run` to start the app
+            - Creation of "fat JAR" executables (includes all dependencies)
+            - Docker layer support (optimizes incremental builds)
+            -->
+            <plugin>
+                <groupId>org.springframework.boot</groupId>
+                <artifactId>spring-boot-maven-plugin</artifactId>
+            </plugin>
+        </plugins>
+    </build>
+
+</project>

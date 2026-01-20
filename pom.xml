@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+=============================================================================
+CoachDiff.ai - Parent Aggregator POM
+=============================================================================
+
+This is the "root" POM of the multi-module project.
+
+ROLE:
+- Defines project modules (currently only backend)
+- Centralizes common properties (Java version, encoding)
+- Allows building everything with a single command from root
+
+USAGE:
+  mvn clean install           # Build all modules
+  mvn clean install -pl backend  # Build only backend
+  mvn test                    # Run tests for all modules
+
+NOTE: The backend module inherits from spring-boot-starter-parent (not this POM)
+to leverage Spring Boot's dependency management.
+=============================================================================
+-->
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+                             https://maven.apache.org/xsd/maven-4.0.0.xsd">
+
+    <modelVersion>4.0.0</modelVersion>
+
+    <!-- =======================================================================
+         MAVEN COORDINATES (GAV: GroupId, ArtifactId, Version)
+         ======================================================================= -->
+    <groupId>com.coachdiff</groupId>
+    <artifactId>coach-diff-parent</artifactId>
+    <version>1.0.0-SNAPSHOT</version>
+
+    <!--
+    packaging=pom means:
+    - This project does NOT produce a JAR/WAR
+    - It only serves to aggregate modules and define common properties
+    - It's the "container" of the monorepo
+    -->
+    <packaging>pom</packaging>
+
+    <!-- =======================================================================
+         PROJECT METADATA
+         ======================================================================= -->
+    <name>CoachDiff.ai</name>
+    <description>AI-powered League of Legends virtual coach</description>
+
+    <!-- =======================================================================
+         MODULES
+         =======================================================================
+         Each <module> is a subdirectory with its own pom.xml.
+         Maven compiles them in the correct order based on dependencies.
+
+         Note: The 'mobile' module is not here because React Native uses npm, not Maven.
+    -->
+    <modules>
+        <module>backend</module>
+        <!-- Future modules could be: -->
+        <!-- <module>common</module>  Shared library -->
+        <!-- <module>integration-tests</module> E2E tests -->
+    </modules>
+
+    <!-- =======================================================================
+         PROPERTIES
+         =======================================================================
+         Properties are reusable "variables" in the POM.
+         Child modules inherit them automatically.
+    -->
+    <properties>
+        <!--
+        Java version: we use 21 LTS (Long Term Support)
+        Java 21 introduces:
+        - Virtual Threads (Project Loom) - lightweight threading
+        - Pattern Matching for switch
+        - Record Patterns
+        - Sequenced Collections
+        -->
+        <java.version>21</java.version>
+        <maven.compiler.source>21</maven.compiler.source>
+        <maven.compiler.target>21</maven.compiler.target>
+
+        <!--
+        Encoding: UTF-8 is the universal standard.
+        Without this property, Maven uses the OS encoding
+        (which on Windows could be Windows-1252), causing issues
+        with special characters.
+        -->
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
+    </properties>
+
+</project>

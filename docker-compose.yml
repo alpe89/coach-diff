@@ -1,0 +1,119 @@
+# =============================================================================
+# CoachDiff.ai - Docker Compose for Development
+# =============================================================================
+#
+# Start with: docker compose up -d
+# Stop with: docker compose down
+# Delete everything (including data): docker compose down -v
+#
+# =============================================================================
+
+services:
+  # ---------------------------------------------------------------------------
+  # PostgreSQL 16
+  # ---------------------------------------------------------------------------
+  # Main relational database. We use PostgreSQL because:
+  # - Open source and free
+  # - Excellent JSON support (useful for semi-structured data)
+  # - Great integration with Spring Data JPA
+  # - Used in production by companies like Instagram, Spotify, Netflix
+  #
+  postgres:
+    image: postgres:16-alpine
+    # Alpine is a minimal Linux distro (~5MB vs ~100MB for Debian)
+    # Result: smaller and faster image to download
+
+    container_name: coachdiff-postgres
+    # Fixed name instead of generated (e.g., coach-diff-postgres-1)
+    # Makes commands easier: docker logs coachdiff-postgres
+
+    environment:
+      # These variables configure PostgreSQL on first startup.
+      # Reads from .env if exists, otherwise uses defaults.
+      POSTGRES_DB: ${POSTGRES_DB:-coachdiff}
+      POSTGRES_USER: ${POSTGRES_USER:-dev}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-dev}
+      # NOTE: In production use complex passwords managed by secrets!
+
+    ports:
+      - "5432:5432"
+      # Maps container port -> host port
+      # So Spring Boot app can connect to localhost:5432
+
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+      # Named volume: data persists even after `docker compose down`
+      # Only lost with `docker compose down -v` (-v flag = volumes)
+
+    healthcheck:
+      # Healthcheck allows other services to wait until Postgres is READY
+      # (not just started, but accepting connections)
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-dev} -d ${POSTGRES_DB:-coachdiff}"]
+      interval: 10s    # Check every 10 seconds
+      timeout: 5s      # Timeout for single check
+      retries: 5       # After 5 failures = unhealthy
+      start_period: 10s # Grace period before starting checks
+
+    networks:
+      - coachdiff-network
+
+  # ---------------------------------------------------------------------------
+  # Redis 7
+  # ---------------------------------------------------------------------------
+  # In-memory cache. We use Redis because:
+  # - Very fast: all operations in memory (~0.1ms)
+  # - Supports TTL (Time To Live): data expires automatically
+  # - Perfect for caching API responses
+  #
+  # In our case, we cache:
+  # - Profiles: 24h TTL (don't change often)
+  # - Match list: 1h TTL (new games)
+  # - Match details: 24h TTL (immutable once played)
+  # - AI suggestions: 24h TTL (cost money to regenerate)
+  #
+  redis:
+    image: redis:7-alpine
+    container_name: coachdiff-redis
+
+    ports:
+      - "6379:6379"
+
+    volumes:
+      - redis_data:/data
+      # Redis can persist data to disk (RDB/AOF)
+      # Useful to not lose cache on restart
+
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      # Redis responds "PONG" if healthy
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+    networks:
+      - coachdiff-network
+
+# =============================================================================
+# Volumes
+# =============================================================================
+# Named volumes are managed by Docker and persist between restarts.
+# Physical location: /var/lib/docker/volumes/ (managed by Docker)
+#
+volumes:
+  postgres_data:
+    name: coachdiff-postgres-data
+  redis_data:
+    name: coachdiff-redis-data
+
+# =============================================================================
+# Networks
+# =============================================================================
+# Custom network to isolate project containers.
+# Containers on the same network can communicate using the service name
+# as hostname (e.g., postgres:5432 instead of 172.17.0.2:5432)
+#
+networks:
+  coachdiff-network:
+    name: coachdiff-network
+    driver: bridge
+    # Bridge is the default: isolated containers that can communicate with each other

@@ -1,0 +1,216 @@
+# =============================================================================
+# CoachDiff.ai - Application Configuration
+# =============================================================================
+#
+# This file configures all aspects of the Spring Boot application.
+# Values in ${...} are environment variables (defined in .env).
+#
+# Variable syntax:
+#   ${VAR}          → Required (fails if missing)
+#   ${VAR:default}  → Optional with default value
+#
+# =============================================================================
+
+spring:
+  # ---------------------------------------------------------------------------
+  # Application Info
+  # ---------------------------------------------------------------------------
+  application:
+    name: coach-diff-backend
+    # Used in logs, metrics, and actuator/info
+
+  # ---------------------------------------------------------------------------
+  # Database (PostgreSQL)
+  # ---------------------------------------------------------------------------
+  datasource:
+    # JDBC URL: protocol://host:port/database
+    url: jdbc:postgresql://${POSTGRES_HOST:localhost}:${POSTGRES_PORT:5432}/${POSTGRES_DB:coachdiff}
+    username: ${POSTGRES_USER:dev}
+    password: ${POSTGRES_PASSWORD:dev}
+    driver-class-name: org.postgresql.Driver
+
+    # HikariCP Connection Pool (default in Spring Boot)
+    # Connection pool: keeps connections open for reuse
+    hikari:
+      maximum-pool-size: 10       # Max simultaneous connections
+      minimum-idle: 2             # Min connections always ready
+      idle-timeout: 300000        # 5 min: close idle connections
+      connection-timeout: 20000   # 20 sec: timeout to get connection
+
+  # ---------------------------------------------------------------------------
+  # JPA / Hibernate
+  # ---------------------------------------------------------------------------
+  jpa:
+    # ddl-auto controls how Hibernate manages the schema:
+    #   none     → Don't touch schema (production)
+    #   validate → Verify entities match schema (recommended with Flyway)
+    #   update   → Create/modify tables (dangerous in prod)
+    #   create   → Drop and recreate (tests only)
+    hibernate:
+      ddl-auto: validate
+
+    # open-in-view: false is CRITICAL for performance
+    # With true (default): Hibernate session stays open during rendering
+    # Problem: lazy loading in view causes N+1 queries
+    # Solution: false + explicit fetch in queries
+    open-in-view: false
+
+    properties:
+      hibernate:
+        # PostgreSQL dialect: optimizes generated SQL
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        # Format SQL in logs (useful for debugging)
+        format_sql: true
+
+    # Show SQL queries in log (dev only)
+    show-sql: false
+
+  # ---------------------------------------------------------------------------
+  # Flyway (Database Migrations)
+  # ---------------------------------------------------------------------------
+  flyway:
+    # Enable automatic migrations at startup
+    enabled: true
+    # Location of SQL migration files
+    locations: classpath:db/migration
+    # If database is not empty and has no flyway_schema_history table,
+    # baseline-on-migrate: true allows starting from current version
+    baseline-on-migrate: false
+
+  # ---------------------------------------------------------------------------
+  # Redis (Cache)
+  # ---------------------------------------------------------------------------
+  data:
+    redis:
+      host: ${REDIS_HOST:localhost}
+      port: ${REDIS_PORT:6379}
+      # password: ${REDIS_PASSWORD:}  # Uncomment for production
+      timeout: 2000ms  # Timeout for Redis operations
+
+  # ---------------------------------------------------------------------------
+  # Virtual Threads (Java 21 / Project Loom)
+  # ---------------------------------------------------------------------------
+  # Virtual Threads are lightweight threads managed by the JVM:
+  # - Millions of threads possible (vs thousands with platform threads)
+  # - Blocking I/O doesn't waste resources (thread "parked" costs ~0)
+  # - Simple synchronous code with async performance
+  #
+  # Spring Boot 4.0 uses virtual threads for:
+  # - Request handling (Tomcat)
+  # - @Async methods
+  # - Scheduled tasks
+  threads:
+    virtual:
+      enabled: true
+
+# =============================================================================
+# CoachDiff Custom Configuration
+# =============================================================================
+# Application-specific settings (not Spring standard)
+
+coach-diff:
+  # ---------------------------------------------------------------------------
+  # Riot Games API
+  # ---------------------------------------------------------------------------
+  riot:
+    api-key: ${COACHDIFF_RIOT_API_KEY}
+
+    # Routing URLs: for endpoints using regional routing
+    # (Account-V1, Match-V5)
+    routing-urls:
+      europe: https://europe.api.riotgames.com
+      americas: https://americas.api.riotgames.com
+      asia: https://asia.api.riotgames.com
+      sea: https://sea.api.riotgames.com
+
+    # Platform URLs: for server-specific endpoints
+    # (Summoner-V4, League-V4)
+    platform-urls:
+      euw1: https://euw1.api.riotgames.com
+      eun1: https://eun1.api.riotgames.com
+      na1: https://na1.api.riotgames.com
+      kr: https://kr.api.riotgames.com
+      br1: https://br1.api.riotgames.com
+      la1: https://la1.api.riotgames.com
+      la2: https://la2.api.riotgames.com
+      oc1: https://oc1.api.riotgames.com
+      tr1: https://tr1.api.riotgames.com
+      ru: https://ru.api.riotgames.com
+      jp1: https://jp1.api.riotgames.com
+      ph2: https://ph2.api.riotgames.com
+      sg2: https://sg2.api.riotgames.com
+      th2: https://th2.api.riotgames.com
+      tw2: https://tw2.api.riotgames.com
+      vn2: https://vn2.api.riotgames.com
+
+  # ---------------------------------------------------------------------------
+  # Riot ID (MVP: fixed profile via env vars)
+  # ---------------------------------------------------------------------------
+  # For MVP there's no search: profile is configured here.
+  # Post-MVP: add search endpoint.
+  riot-id:
+    game-name: ${COACHDIFF_RIOT_GAME_NAME}
+    tag-line: ${COACHDIFF_RIOT_TAG_LINE}
+    region: ${COACHDIFF_RIOT_REGION:euw1}
+
+# =============================================================================
+# OpenAI Configuration
+# =============================================================================
+openai:
+  api-key: ${COACHDIFF_OPENAI_API_KEY}
+  # gpt-4o-mini: cheap but capable model
+  # ~$0.15/1M input tokens, $0.60/1M output tokens
+  model: gpt-4o-mini
+  base-url: https://api.openai.com/v1
+
+# =============================================================================
+# Server Configuration
+# =============================================================================
+server:
+  port: 8080
+
+  # Tomcat tuning for virtual threads
+  tomcat:
+    threads:
+      max: 200        # Max thread pool (with virtual threads, less critical)
+      min-spare: 10   # Threads always ready
+
+# =============================================================================
+# Actuator (Monitoring & Health)
+# =============================================================================
+management:
+  endpoints:
+    web:
+      exposure:
+        # Endpoints exposed via HTTP
+        # health: app and dependency status
+        # info: app metadata
+        # metrics: Micrometer metrics
+        include: health,info,metrics
+
+  endpoint:
+    health:
+      # Show health details (db, redis, disk)
+      show-details: when-authorized
+
+  # Info endpoint
+  info:
+    env:
+      enabled: true
+
+# =============================================================================
+# Logging
+# =============================================================================
+logging:
+  level:
+    # Root level: INFO (sensible default)
+    root: INFO
+    # App package: DEBUG for more details in dev
+    com.coachdiff: DEBUG
+    # SQL queries (uncomment for debugging)
+    # org.hibernate.SQL: DEBUG
+    # org.hibernate.type.descriptor.sql: TRACE
+
+  pattern:
+    # Log pattern with timestamp, level, thread, logger, message
+    console: "%d{yyyy-MM-dd HH:mm:ss} [%thread] %-5level %logger{36} - %msg%n"

@@ -1,0 +1,63 @@
+# =============================================================================
+# CoachDiff.ai - Test Configuration
+# =============================================================================
+#
+# This file overrides application.yml when the "test" profile is active.
+# Spring Boot automatically activates this profile during @SpringBootTest.
+#
+# NOTE: PostgreSQL and Redis configurations are NOT needed here because
+# @ServiceConnection from Testcontainers configures them automatically.
+#
+# =============================================================================
+
+spring:
+  # JPA: use create-drop to have clean schema for each test
+  jpa:
+    hibernate:
+      ddl-auto: none  # Flyway manages the schema
+    show-sql: false   # Quiet during tests
+
+  # Flyway: run migrations in tests too
+  flyway:
+    enabled: true
+    clean-disabled: false  # Allow flyway:clean in tests
+
+# =============================================================================
+# CoachDiff Config for Tests
+# =============================================================================
+# Fake values for variables that normally come from .env
+# These allow tests to start without configuring .env
+
+coach-diff:
+  riot:
+    # Fake API key (tests will use WireMock, not real API)
+    api-key: RGAPI-test-key-not-real
+
+    # URLs that will be overridden by WireMock in integration tests
+    routing-urls:
+      europe: https://europe.api.riotgames.com
+      americas: https://americas.api.riotgames.com
+      asia: https://asia.api.riotgames.com
+      sea: https://sea.api.riotgames.com
+    platform-urls:
+      euw1: https://euw1.api.riotgames.com
+
+  # Test profile
+  riot-id:
+    game-name: TestPlayer
+    tag-line: TEST
+    region: euw1
+
+# Fake OpenAI (WireMock in tests)
+openai:
+  api-key: sk-test-key-not-real
+  model: gpt-4o-mini
+  base-url: https://api.openai.com/v1
+
+# Minimal logging in tests (less noise)
+logging:
+  level:
+    root: WARN
+    com.coachdiff: INFO
+    org.springframework: WARN
+    org.testcontainers: INFO  # Useful to see Testcontainers logs
