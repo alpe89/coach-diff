@@ -2,6 +2,7 @@ package com.coachdiff;
 
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.SpringBootApplication;
+import org.springframework.boot.context.properties.ConfigurationPropertiesScan;
 
 /**
  * Entry point for the CoachDiff.ai application.
@@ -18,6 +19,12 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  *   <li>{@code @ComponentScan}: Scans for @Component, @Service, @Repository, @Controller
  *       in this package and all sub-packages</li>
  * </ul>
+ *
+ * <p>
+ * We also use {@code @ConfigurationPropertiesScan} to automatically register
+ * classes annotated with {@code @ConfigurationProperties} (e.g., RiotApiProperties,
+ * RiotIdProperties). Without this, Spring wouldn't find our configuration properties classes.
+ * </p>
  *
  * <h2>Virtual Threads (Java 21)</h2>
  * <p>
@@ -46,6 +53,7 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
  * </pre>
  */
 @SpringBootApplication
+@ConfigurationPropertiesScan
 public class Application {
 
     /**
