@@ -115,6 +115,10 @@ coach-diff:
   riot:
     api-key: ${COACHDIFF_RIOT_API_KEY}
 
+    # Queue ID for ranked Solo/Duo (420)
+    # Configurable in case Riot changes the ID (unlikely but safe)
+    ranked-solo-queue-id: ${COACHDIFF_RANKED_SOLO_QUEUE_ID:420}
+
     # Routing URLs: for endpoints using regional routing
     # (Account-V1, Match-V5)
     routing-urls:

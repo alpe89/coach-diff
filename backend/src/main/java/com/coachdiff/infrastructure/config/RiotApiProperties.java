@@ -19,10 +19,11 @@ import java.util.Map;
  * <pre>
  * coach-diff:
  *   riot:
- *     api-key: ${COACHDIFF_RIOT_API_KEY}    → getApiKey()
- *     routing-urls:                          → getRoutingUrls()
+ *     api-key: ${COACHDIFF_RIOT_API_KEY}              → getApiKey()
+ *     ranked-solo-queue-id: ${...:420}                → getRankedSoloQueueId()
+ *     routing-urls:                                    → getRoutingUrls()
  *       europe: https://europe.api...
- *     platform-urls:                         → getPlatformUrls()
+ *     platform-urls:                                   → getPlatformUrls()
  *       euw1: https://euw1.api...
  * </pre>
  *
@@ -67,6 +68,17 @@ public class RiotApiProperties {
     private String apiKey;
 
     /**
+     * Queue ID for Ranked Solo/Duo.
+     * <p>
+     * Default is 420 (Ranked Solo/Duo on Summoner's Rift).
+     * Configurable in case Riot ever changes the queue ID.
+     * </p>
+     *
+     * @see <a href="https://static.developer.riotgames.com/docs/lol/queues.json">Queue IDs</a>
+     */
+    private int rankedSoloQueueId = 420;
+
+    /**
      * Regional routing URLs for Account-V1 and Match-V5.
      * <p>
      * Example entries:
@@ -98,6 +110,14 @@ public class RiotApiProperties {
 
     public void setApiKey(String apiKey) {
         this.apiKey = apiKey;
+    }
+
+    public int getRankedSoloQueueId() {
+        return rankedSoloQueueId;
+    }
+
+    public void setRankedSoloQueueId(int rankedSoloQueueId) {
+        this.rankedSoloQueueId = rankedSoloQueueId;
     }
 
     public Map<String, String> getRoutingUrls() {

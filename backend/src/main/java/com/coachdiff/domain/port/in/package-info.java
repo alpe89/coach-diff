@@ -9,7 +9,7 @@
  *
  * <h2>Who implements them?</h2>
  * <p>
- * Implementations go in the {@code application/usecase} layer.
+ * Implementations go in the {@code application/service} layer.
  * </p>
  *
  * <h2>Who uses them?</h2>
@@ -20,14 +20,14 @@
  *
  * <h2>Planned Ports</h2>
  * <pre>
- * FetchProfileUseCase        - Fetch player profile
- * GenerateSuggestionsUseCase - Generate AI suggestions
- * GetMatchHistoryUseCase     - Fetch match history
+ * FetchProfilePort           - Fetch player profile
+ * GenerateSuggestionsPort    - Generate AI suggestions
+ * GetMatchHistoryPort        - Fetch match history
  * </pre>
  *
  * <h2>Example</h2>
  * <pre>{@code
- * public interface FetchProfileUseCase {
+ * public interface FetchProfilePort {
  *     SummonerProfile fetchProfile(String gameName, String tagLine, String region);
  * }
  * }</pre>

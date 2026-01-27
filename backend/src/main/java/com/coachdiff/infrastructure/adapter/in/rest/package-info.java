@@ -26,15 +26,15 @@
  * <h2>Planned Endpoints</h2>
  * <pre>
  * ProfileController
- *   GET /api/profile            → FetchProfileUseCase
+ *   GET /api/profile            → FetchProfilePort
  *   GET /api/profile/comparison → With comparison vs rank medians
  *
  * SuggestionsController
- *   GET /api/suggestions        → GetSuggestionsUseCase
- *   POST /api/suggestions/refresh → GenerateSuggestionsUseCase
+ *   GET /api/suggestions        → GetSuggestionsPort
+ *   POST /api/suggestions/refresh → GenerateSuggestionsPort
  *
  * MatchController
- *   GET /api/matches            → GetMatchHistoryUseCase
+ *   GET /api/matches            → GetMatchHistoryPort
  * </pre>
  *
  * <h2>Example</h2>
@@ -43,7 +43,7 @@
  * @RequestMapping("/api")
  * public class ProfileController {
  *
- *     private final FetchProfileUseCase fetchProfile;
+ *     private final FetchProfilePort fetchProfile;
  *
  *     @GetMapping("/profile")
  *     public SummonerProfile getProfile() {

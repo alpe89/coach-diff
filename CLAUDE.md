@@ -396,6 +396,21 @@ POSTGRES_PASSWORD=dev
 
 ---
 
+## Coding Conventions
+
+### Naming
+- **Service over UseCase**: Use "Service" suffix instead of "UseCase" for application layer classes
+  - Good: `FetchProfileService`, `GenerateSuggestionsService`
+  - Avoid: `FetchProfileUseCase`, `GenerateSuggestionsUseCase`
+- **Adapter suffix**: Infrastructure adapters use "Adapter" suffix (e.g., `RiotApiAdapter`)
+- **Port suffix**: Ports use "Port" suffix for outbound (e.g., `RiotApiPort`) or describe the action for inbound
+- **DTO suffix**: Data Transfer Objects use "Dto" suffix (e.g., `RiotAccountDto`)
+
+### Language
+- All code, comments, and documentation must be in **English only**
+
+---
+
 ## Key Technical Decisions
 
 ### Architecture

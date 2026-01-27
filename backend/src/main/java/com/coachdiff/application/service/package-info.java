@@ -40,7 +40,7 @@
  * <h2>Example</h2>
  * <pre>{@code
  * @Service
- * public class FetchProfileService implements FetchProfileUseCase {
+ * public class FetchProfileService implements FetchProfilePort {
  *
  *     private final RiotApiPort riotApi;
  *     private final SummonerRepository repository;
